@@ -13,6 +13,7 @@ Regarding Flask Documentation, please use the link below:
 https://flask.palletsprojects.com/en/stable/quickstart/
 
 Also see the below screenshot:
-![Flask Documentation](images/Flask Initial Code.png)
+[Flask Documentation](C:\Users\joshu\OneDrive\Documents\UCCI\Software Engineering\Final Project\Budgeting System\Budgeting-System\images\Flask Initial Code.png)
+
 This also outlines some code that was used in the inital app.py code.
 
