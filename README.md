@@ -50,6 +50,6 @@ Through the initial creation of the database, the below tables have been impleme
 ## Error Fixes
 Please see the below screenshots related to the user_id error:
 
-[Flask Documentation](images/user_id%20error.png)
+[user_id Error Documentation](images/user_id%20error.png)
 
-[Flask Documentation](images/user_id%20error%20extended.png)
+[user_id Error Extended Documentation](images/user_id%20error%20extended.png)
