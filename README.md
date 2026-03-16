@@ -17,3 +17,13 @@ Also see the below screenshot:
 
 This also outlines some code that was used in the inital app.py code.
 
+## Database
+With the use of MySQL the database creation has begun. The database name is budgeting_system. 
+
+Through the initial creation of the database, the below tables have been implemented accordingly:
+    - Users
+    - Labels 
+    - Transactions 
+    - Budget
+    - Alerts
+    - Reports
