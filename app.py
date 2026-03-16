@@ -8,6 +8,11 @@ app.config.from_object(Config)
 
 mysql = MySQL(app)
 
+#Home Route
+@app.route('/')
+def index():
+    return redirect(url_for('login'))
+
 #Register Route 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -47,7 +52,7 @@ def login():
         cursor.close()
 
         if user and bcrypt.checkpw(password.encode('utf-8'), user['Password_Hash'].encode('utf-8')):
-            session['user_id'] = user['UserID']
+            session['UserID'] = user['UserID']
             session['Username'] = user['Username']
             flash('Logged in successfully!', 'Success')
             return redirect(url_for('Dashboard'))
@@ -66,13 +71,13 @@ def logout():
 #Dashboard Route
 @app.route('/dashboard')
 def Dashboard():
-    if 'user_id' not in session:
+    if 'UserID' not in session:
         return redirect(url_for('login'))
     
     cursor = mysql.connection.cursor()
 
     #Retrieve User Profiles 
-    cursor.execute("SELECT Username FROM Users WHERE UserID = %s", [session['user_id']])
+    cursor.execute("SELECT Username FROM Users WHERE UserID = %s", [session['UserID']])
     user = cursor.fetchone()
 
     #Obtain User's Current Balance
@@ -83,7 +88,7 @@ def Dashboard():
         AS Balance
         FROM Transactions 
         WHERE UserID = %s
-    """, [session['user_id']])
+    """, [session['UserID']])
     balance = cursor.fetchone()
 
     #Obtain The Latest Transaction
