@@ -53,3 +53,11 @@ Please see the below screenshots related to the user_id error:
 [user_id Error Documentation](images/user_id%20error.png)
 
 [user_id Error Extended Documentation](images/user_id%20error%20extended.png)
+
+## Documentation Milestones
+Successfully implemented the addition of transactions for each user.
+
+[Tranaction Implementaiton Documentaiton](images/Adding%20Transaction%20Success.png)
+
+[Adding Transactions Dropdown Documentation](images/Add%20Transaction%20Dropdown%20Menu.png)
+
