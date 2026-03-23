@@ -55,7 +55,7 @@ def login():
             session['UserID'] = user['UserID']
             session['Username'] = user['Username']
             flash('Logged in successfully!', 'Success')
-            return redirect(url_for('Dashboard'))
+            return redirect(url_for('dashboard'))
         else:
             flash("Invalid username or password.", 'Error')
     
