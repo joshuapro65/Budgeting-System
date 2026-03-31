@@ -111,7 +111,7 @@ def dashboard():
             FROM Transactions t
             LEFT JOIN Labels l ON t.LabelID = l.LabelID
             WHERE t.UserID = %s AND t.Type = 'income'
-            ORDER BY t.Date DESC
+            ORDER BY t.Date DESC, t.TransactionID DESC
         """, [session['UserID']])
     elif filter_type == 'expense':
         cursor.execute("""
@@ -119,7 +119,7 @@ def dashboard():
             FROM Transactions t
             LEFT JOIN Labels l ON t.LabelID = l.LabelID
             WHERE t.UserID = %s AND t.Type = 'expense'
-            ORDER BY t.Date DESC
+            ORDER BY t.Date DESC, t.TransactionID DESC
         """, [session['UserID']])
     else:
         cursor.execute("""
@@ -127,7 +127,7 @@ def dashboard():
             FROM Transactions t
             LEFT JOIN Labels l ON t.LabelID = l.LabelID
             WHERE t.UserID = %s
-            ORDER BY t.Date DESC
+            ORDER BY t.Date DESC, t.TransactionID DESC
         """, [session['UserID']])
 
     transactions = cursor.fetchall()
@@ -149,8 +149,7 @@ def dashboard():
 
     tips = random.sample(Financial_Tips, 3)
 
-    return render_template('dashboard.html',
-                           user=user, balance=balance, latest_transaction=latest_transaction, transactions=transactions, filter_type=filter_type, tips=tips)
+    return render_template('dashboard.html', user=user, balance=balance, latest_transaction=latest_transaction, transactions=transactions, filter_type=filter_type, tips=tips)
 
 #Transaction Route
 @app.route('/transaction', methods=['GET', 'POST'])
