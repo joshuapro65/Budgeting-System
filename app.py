@@ -188,6 +188,50 @@ def addtransaction():
     cursor.close()
     return render_template('addtransaction.html', labels=labels)
 
+#Edit Transaction Route
+@app.route('/edittransaction/<int:transaction_id>', methods=['GET', 'POST'])
+def edittransaction(transaction_id):
+    if 'UserID' not in session:
+        return redirect(url_for('login'))
+    
+    cursor = mysql.connection.cursor()
+
+    #Gets the transaction ot be edited 
+    cursor.execute("SELECT * FROM Transactions WHERE TransactionID = %s AND UserID = %s", (transaction_id, session['UserID']))
+    transaction = cursor.fetchone()
+
+    if not transaction:
+        flash('Transaction not found.', 'error')
+        return redirect(url_for('dashboard'))
+
+    #Gets the labels for the dropdown menu
+    cursor.execute("SELECT LabelID, Name FROM Labels WHERE UserID = %s", [session['UserID']])
+    labels = cursor.fetchall()
+
+    if request.method == 'POST':
+        amount = request.form['amount']
+        date = request.form['date']
+        source = request.form['source']
+        description = request.form['description']
+        label_id = request.form['label_id'] or None
+
+        try:
+            cursor.execute("""
+                UPDATE Transactions 
+                SET Amount = %s, Date = %s, Source = %s, Description = %s, LabelID = %s
+                WHERE TransactionID = %s AND UserID = %s
+            """, (amount, date, source, description, label_id, transaction_id, session['UserID']))
+            mysql.connection.commit()
+            flash('Transaction updated successfully!', 'success')
+            return redirect(url_for('dashboard'))
+        except Exception as e:
+            flash('Error updating transaction. Please try again.', 'danger')
+        finally:
+            cursor.close()
+
+    cursor.close()
+    return render_template('edittransaction.html', transaction=transaction, labels=labels)
+
 #Label Management Route
 @app.route('/labels', methods=['GET', 'POST'])
 def labels():
@@ -204,30 +248,29 @@ def labels():
             mysql.connection.commit()
             flash('Label created successfully!', 'success')
         except Exception as e:
-            flash('Error creating label.', 'danger')
+            flash('Error creating label.', 'error')
 
     #Gets all labels for this user
-    cur.execute("SELECT LabelID, Name FROM Labels WHERE UserID = %s", [session['UserID']])
-    labels = cur.fetchall()
-    cur.close()
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT LabelID, Name FROM Labels WHERE UserID = %s", [session['UserID']])
+    labels = cursor.fetchall()
+    cursor.close()
 
     return render_template('labels.html', labels=labels)
 
-
+#Delete Label Route
 @app.route('/deletelabel/<int:label_id>')
 def deletelabel(label_id):
     if 'UserID' not in session:
         return redirect(url_for('login'))
 
-    cur = mysql.connection.cursor()
-    cur.execute("DELETE FROM Labels WHERE LabelID = %s AND UserID = %s",
+    cursor = mysql.connection.cursor()
+    cursor.execute("DELETE FROM Labels WHERE LabelID = %s AND UserID = %s",
                 (label_id, session['UserID']))
     mysql.connection.commit()
-    cur.close()
+    cursor.close()
     flash('Label deleted successfully!', 'success')
     return redirect(url_for('labels'))
-
-
 
 #Run
 if __name__ == '__main__':
