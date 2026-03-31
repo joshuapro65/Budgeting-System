@@ -61,3 +61,11 @@ Successfully implemented the addition of transactions for each user.
 
 [Adding Transactions Dropdown Documentation](images/Add%20Transaction%20Dropdown%20Menu.png)
 
+[Fixed Transaction History All Display Documentation](images/All%20Transaction%20History%20Tab.png)
+
+[Fixed Transaction History Income Display Documentation](images/Income%20Transaction%20History%20Tab.png)
+
+[Fixed Transaction History Expense Display Documentation](images/Expense%20Transaction%20History%20Tab.png)
+
+
+

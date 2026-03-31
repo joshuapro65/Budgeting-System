@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_mysqldb import MySQL
 from config import Config
 import bcrypt
+import random
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -74,9 +75,11 @@ def dashboard():
     if 'UserID' not in session:
         return redirect(url_for('login'))
     
+    filter_type = request.args.get('filter_by', 'all')
+
     cursor = mysql.connection.cursor()
 
-    #Retrieve User Profiles 
+    #Get User Profile 
     cursor.execute("SELECT Username FROM Users WHERE UserID = %s", [session['UserID']])
     user = cursor.fetchone()
 
@@ -101,9 +104,53 @@ def dashboard():
     """, [session['UserID']])
     latest_transaction = cursor.fetchone()
 
+    #Get Filtered Transactions
+    if filter_type == 'income':
+        cursor.execute("""
+            SELECT t.TransactionID, t.Type, t.Amount, t.Date, t.Source, t.Description, l.Name AS Label
+            FROM Transactions t
+            LEFT JOIN Labels l ON t.LabelID = l.LabelID
+            WHERE t.UserID = %s AND t.Type = 'income'
+            ORDER BY t.Date DESC
+        """, [session['UserID']])
+    elif filter_type == 'expense':
+        cursor.execute("""
+            SELECT t.TransactionID, t.Type, t.Amount, t.Date, t.Source, t.Description, l.Name AS Label
+            FROM Transactions t
+            LEFT JOIN Labels l ON t.LabelID = l.LabelID
+            WHERE t.UserID = %s AND t.Type = 'expense'
+            ORDER BY t.Date DESC
+        """, [session['UserID']])
+    else:
+        cursor.execute("""
+            SELECT t.TransactionID, t.Type, t.Amount, t.Date, t.Source, t.Description, l.Name AS Label
+            FROM Transactions t
+            LEFT JOIN Labels l ON t.LabelID = l.LabelID
+            WHERE t.UserID = %s
+            ORDER BY t.Date DESC
+        """, [session['UserID']])
+
+    transactions = cursor.fetchall()
     cursor.close()
 
-    return render_template('dashboard.html', user=user, balance=balance, latest_transaction=latest_transaction)
+    #Implementation of Tips on the Dashboard
+    Financial_Tips = [
+        "Save at least 20% of your income each month before spending.",
+        "Track every expense, no matter how small — small purchases add up quickly.",
+        "Build an emergency fund that covers at least 3 months of expenses.",
+        "Avoid spending money you haven't earned yet — live within your means.",
+        "Review your spending habits at the end of each month to identify patterns.",
+        "Pay yourself first — set aside savings before paying any other bills.",
+        "Avoid impulse purchases by waiting 24 hours before buying non-essentials.",
+        "Use labels to categorise your spending so you can see where your money goes.",
+        "Set a monthly spending limit and stick to it — every dollar counts.",
+        "Financial freedom starts with small consistent habits, not big one-time changes."
+    ]
+
+    tips = random.sample(Financial_Tips, 3)
+
+    return render_template('dashboard.html',
+                           user=user, balance=balance, latest_transaction=latest_transaction, transactions=transactions, filter_type=filter_type, tips=tips)
 
 #Transaction Route
 @app.route('/transaction', methods=['GET', 'POST'])
@@ -180,6 +227,8 @@ def deletelabel(label_id):
     cur.close()
     flash('Label deleted successfully!', 'success')
     return redirect(url_for('labels'))
+
+
 
 #Run
 if __name__ == '__main__':
