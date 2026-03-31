@@ -25,6 +25,8 @@ https://pypi.org/project/bcrypt/
 
 https://jinja.palletsprojects.com/en/3.1.x/templates/
 
+https://www.geeksforgeeks.org/mysql/mysql-cursors/
+
 Also see the below screenshots:
 [Flask Documentation](images/flask_docs.png)
 

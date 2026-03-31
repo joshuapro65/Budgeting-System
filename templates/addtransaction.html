@@ -4,22 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Transaction | Budgeting System</title>
+    <!-- Bootstrap CSS for the style and layout -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
+    <!-- The Navigation Bar, it gives the user a way to navigate the website -->
     <nav class="navbar navbar-dark bg-primary px-4">
         <span class="navbar-brand fw-bold">Budgeting System</span>
         <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light btn-sm">Back to Dashboard</a>
     </nav>
 
     <div class="container mt-5">
+        <!-- Centers the Add Transaction Form on the page -->
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="card shadow">
                     <div class="card-body p-4">
                         <h3 class="card-title text-center mb-4">Add Transaction</h3>
 
-                        <!-- Flash Messages -->
+                        <!-- Flash Messages, displays any messages after form submission -->
                         {% with messages = get_flashed_messages(with_categories=true) %}
                             {% if messages %}
                                 {% for category, message in messages %}
@@ -28,6 +31,7 @@
                             {% endif %}
                         {% endwith %}
 
+                        <!-- Add Transaction Form, which include the type, amount, date, source, description and label sections -->
                         <form method="POST">
                             <div class="mb-3">
                                 <label class="form-label">Type</label>
