@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Settings | Budgeting System</title>
+    <!-- Bootstrap CSS for styling and responsive layout -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <!-- Navigation bar — provides a link back to the dashboard -->
+    <nav class="navbar navbar-dark bg-primary px-4">
+        <span class="navbar-brand fw-bold">Budgeting System</span>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light btn-sm">Back to Dashboard</a>
+    </nav>
+
+    <div class="container mt-5">
+        <!-- Centers the budget settings card horizontally on the page -->
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-body p-4">
+                        <h3 class="card-title text-center mb-4">Budget Settings</h3>
+
+                        <!-- Flash Messages — displays success or error feedback from the budget route -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <!-- Budget form — submits spending limit, low funds limit and timeframe via POST to the budget route -->
+                        <!-- If a budget already exists the fields are pre-populated with the current settings -->
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label class="form-label">Spending Limit ($)</label>
+                                <!-- The maximum amount the user wants to spend before an alert is triggered -->
+                                <input type="number" name="spending_limit" step="0.01"
+                                       class="form-control" required
+                                       value="{{ existing_budget['SpendingLimit'] if existing_budget else '' }}">
+                                <small class="text-muted">The maximum amount you want to spend.</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Low Funds Limit ($)</label>
+                                <!-- The minimum balance the user wants to maintain before a low funds alert is triggered -->
+                                <input type="number" name="low_funds_limit" step="0.01"
+                                       class="form-control" required
+                                       value="{{ existing_budget['LowFundsLimit'] if existing_budget else '' }}">
+                                <small class="text-muted">Alert me when my balance drops below this amount.</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Timeframe</label>
+                                <!-- Determines how often the spending limit resets — weekly or monthly -->
+                                <select name="timeframe" class="form-select" required>
+                                    <option value="">Select Timeframe</option>
+                                    <option value="weekly" {% if existing_budget and existing_budget['Timeframe'] == 'weekly' %}selected{% endif %}>Weekly</option>
+                                    <option value="monthly" {% if existing_budget and existing_budget['Timeframe'] == 'monthly' %}selected{% endif %}>Monthly</option>
+                                </select>
+                                <small class="text-muted">How often your spending limit resets.</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Save Budget Settings</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

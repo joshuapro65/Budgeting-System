@@ -24,6 +24,17 @@
             {% endif %}
         {% endwith %}
 
+        <!-- Alerts Banner — displays at the top of the page if any budget thresholds have been breached -->
+        {% if alerts %}
+            {% for alert in alerts %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ alert }}
+                    <!-- Dismiss button allows the user to close the alert manually -->
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
         <h4 class="mb-4">Welcome back, {{ user['Username'] }}!</h4>
 
         <!-- Top Cards Row -->
@@ -58,6 +69,7 @@
                     <a href="{{ url_for('addtransaction') }}" class="btn btn-primary btn-sm w-100 mb-2">Add Transaction</a>
                     <a href="{{ url_for('labels') }}" class="btn btn-outline-primary btn-sm w-100 mb-2">Manage Labels</a>
                     <a href="#" class="btn btn-outline-primary btn-sm w-100">View Reports</a>
+                    <a href="{{ url_for('budget') }}" class="btn btn-outline-primary btn-sm w-100 mb-2">Budget Settings</a>
                 </div>
             </div>
 

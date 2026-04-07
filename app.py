@@ -133,6 +133,31 @@ def dashboard():
     transactions = cursor.fetchall()
     cursor.close()
 
+    #Alerts Implementation
+    # Check for budget alerts and notify the user if thresholds are breached
+    alerts = []
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM Budget WHERE UserID = %s", [session['UserID']])
+    user_budget = cursor.fetchone()
+
+    if user_budget:
+        # Low funds alert — triggers when balance drops below the user's set low funds limit
+        if balance['Balance'] < user_budget['LowFundsLimit']:
+            alerts.append(f"⚠️ Low Funds Alert: Your balance of ${balance['Balance']:.2f} is below your low funds limit of ${user_budget['LowFundsLimit']:.2f}!")
+
+        # Spending limit alert — triggers when total expenses exceed the user's set spending limit
+        cursor.execute("""
+            SELECT COALESCE(SUM(Amount), 0) AS TotalExpenses
+            FROM Transactions
+            WHERE UserID = %s AND Type = 'expense'
+        """, [session['UserID']])
+        total_expenses = cursor.fetchone()
+
+        if total_expenses['TotalExpenses'] > user_budget['SpendingLimit']:
+            alerts.append(f"🚨 Spending Limit Alert: Your total expenses of ${total_expenses['TotalExpenses']:.2f} have exceeded your spending limit of ${user_budget['SpendingLimit']:.2f}!")
+
+    cursor.close()
+
     #Implementation of Tips on the Dashboard
     Financial_Tips = [
         "Save at least 20% of your income each month before spending.",
@@ -149,7 +174,50 @@ def dashboard():
 
     tips = random.sample(Financial_Tips, 3)
 
-    return render_template('dashboard.html', user=user, balance=balance, latest_transaction=latest_transaction, transactions=transactions, filter_type=filter_type, tips=tips)
+    return render_template('dashboard.html', user=user, balance=balance, latest_transaction=latest_transaction, transactions=transactions, filter_type=filter_type, tips=tips, alerts=alerts)
+
+#Budget Route
+@app.route('/budget', methods=['GET', 'POST'])
+def budget():
+    if 'UserID' not in session:
+        return redirect(url_for('login'))
+
+    cursor = mysql.connection.cursor()
+
+    # Get existing budget settings for this user if they exist
+    cursor.execute("SELECT * FROM Budget WHERE UserID = %s", [session['UserID']])
+    existing_budget = cursor.fetchone()
+
+    if request.method == 'POST':
+        spending_limit = request.form['spending_limit']
+        low_funds_limit = request.form['low_funds_limit']
+        timeframe = request.form['timeframe']
+
+        try:
+            if existing_budget:
+                # Update existing budget settings
+                cursor.execute("""
+                    UPDATE Budget 
+                    SET SpendingLimit = %s, LowFundsLimit = %s, Timeframe = %s
+                    WHERE UserID = %s
+                """, (spending_limit, low_funds_limit, timeframe, session['UserID']))
+            else:
+                # Create new budget settings for this user
+                cursor.execute("""
+                    INSERT INTO Budget (UserID, SpendingLimit, LowFundsLimit, Timeframe)
+                    VALUES (%s, %s, %s, %s)
+                """, (session['UserID'], spending_limit, low_funds_limit, timeframe))
+
+            mysql.connection.commit()
+            flash('Budget settings saved successfully!', 'success')
+            return redirect(url_for('dashboard'))
+        except Exception as e:
+            flash('Error saving budget settings. Please try again.', 'danger')
+        finally:
+            cursor.close()
+
+    cursor.close()
+    return render_template('budget.html', existing_budget=existing_budget)
 
 #Transaction Route
 @app.route('/transaction', methods=['GET', 'POST'])
