@@ -340,6 +340,68 @@ def deletelabel(label_id):
     flash('Label deleted successfully!', 'success')
     return redirect(url_for('labels'))
 
+#Reports Route
+@app.route('/reports')
+def reports():
+    if 'UserID' not in session:
+        return redirect(url_for('login'))
+
+    #Gets the selected timeframe for the report either weekly or monthly
+    timeframe = request.args.get('timeframe', 'monthly')
+
+    cursor = mysql.connection.cursor()
+
+    #The data range based on the selected timeframe
+    if timeframe == 'weekly':
+        cursor.execute("""
+            SELECT 
+                COALESCE(SUM(CASE WHEN Type = 'income' THEN Amount ELSE 0 END), 0) AS TotalIncome,
+                COALESCE(SUM(CASE WHEN Type = 'expense' THEN Amount ELSE 0 END), 0) AS TotalExpenses,
+                COALESCE(SUM(CASE WHEN Type = 'income' THEN Amount ELSE 0 END), 0) -
+                COALESCE(SUM(CASE WHEN Type = 'expense' THEN Amount ELSE 0 END), 0) AS NetBalance
+            FROM Transactions
+            WHERE UserID = %s
+            AND Date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        """, [session['UserID']])
+    else:
+        cursor.execute("""
+            SELECT 
+                COALESCE(SUM(CASE WHEN Type = 'income' THEN Amount ELSE 0 END), 0) AS TotalIncome,
+                COALESCE(SUM(CASE WHEN Type = 'expense' THEN Amount ELSE 0 END), 0) AS TotalExpenses,
+                COALESCE(SUM(CASE WHEN Type = 'income' THEN Amount ELSE 0 END), 0) -
+                COALESCE(SUM(CASE WHEN Type = 'expense' THEN Amount ELSE 0 END), 0) AS NetBalance
+            FROM Transactions
+            WHERE UserID = %s
+            AND Date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+        """, [session['UserID']])
+
+    summary = cursor.fetchone()
+
+    #Gets each transaction for the specific timeframe selected
+    if timeframe == 'weekly':
+        cursor.execute("""
+            SELECT t.Type, t.Amount, t.Date, t.Source, t.Description, l.Name AS Label
+            FROM Transactions t
+            LEFT JOIN Labels l ON t.LabelID = l.LabelID
+            WHERE t.UserID = %s
+            AND t.Date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+            ORDER BY t.Date DESC, t.TransactionID DESC
+        """, [session['UserID']])
+    else:
+        cursor.execute("""
+            SELECT t.Type, t.Amount, t.Date, t.Source, t.Description, l.Name AS Label
+            FROM Transactions t
+            LEFT JOIN Labels l ON t.LabelID = l.LabelID
+            WHERE t.UserID = %s
+            AND t.Date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+            ORDER BY t.Date DESC, t.TransactionID DESC
+        """, [session['UserID']])
+    
+    transactions = cursor.fetchall()
+    cursor.close()
+
+    return render_template('reports.html', summary=summary, transactions=transactions, timeframe=timeframe)
+
 #Run
 if __name__ == '__main__':
     app.run(debug=True)
